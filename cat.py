@@ -306,12 +306,12 @@ class ParseResult:
         self.error = None
         self.node = None
 
+    def register_advancement(self):
+        pass
+    
     def register(self, res):
-        if isinstance(res, ParseResult):
-            if res.error: self.error = res.error
-            return res.node
-
-        return res
+        if res.error: self.error = res.error
+        return res.node
 
     def success(self, node):
         self.node = node
@@ -354,15 +354,18 @@ class Parser:
         tok = self.current_tok
 
         if tok.type in (TT_INT, TT_FLOAT):
-            res.register(self.advance())
+            res.register_advancement()
+            self.advance()
             return res.success(NumberNode(tok))
 
         elif tok.type == TT_IDENTIFIER:
-            res.register(self.advance())
+            res.register_advancement()
+            self.advance()
             return res.success(VarAccessNode(tok))
 
         elif tok.type == TT_LPAREN:
-            res.register(self.advance())
+            res.register_advancement()
+            self.advance()
             expr = res.register(self.expr())
             if res.error: return res
             if self.current_tok.type == TT_RPAREN:
@@ -376,7 +379,7 @@ class Parser:
 
         return res.failure(InvalidSyntaxError(
             tok.pos_start, tok.pos_end,
-            "Expected int, float, '+', '-' or '('"
+            "Expected int, float, , identifier, '+', '-' or '('"
         ))
 
     def power(self):
@@ -387,7 +390,8 @@ class Parser:
         tok = self.current_tok
 
         if tok.type in (TT_PLUS, TT_MINUS):
-            res.register(self.advance())
+            res.register_advancement()
+            self.advance()
             factor = res.register(self.factor())
             if res.error: return res
             return res.success(UnaryOpNode(tok, factor))
@@ -401,7 +405,8 @@ class Parser:
         res = ParseResult()
 
         if self.current_tok.matches(TT_KEYWORD, 'mewVAR'):
-            res.register(self.advance())
+            res.register_advancement()
+            self.advance()
 
             if self.current_tok.type != TT_IDENTIFIER:
                 return res.failure(InvalidSyntaxError(
@@ -410,7 +415,8 @@ class Parser:
                 ))
             
             var_name = self.current_tok
-            res.register(self.advance())
+            res.register_advancement()
+            self.advance()
 
             if self.current_tok.type != TT_EQ:
                 return res.failure(InvalidSyntaxError(
@@ -418,7 +424,8 @@ class Parser:
                     "Expected '='"
                 ))
 
-            res.register(self.advance())
+            res.register_advancement()
+            self.advance()
             expr =  res.register(self.expr())
             if res.error: return res
             return res.success(VarAssignNode(var_name, expr))
@@ -437,7 +444,8 @@ class Parser:
 
         while self.current_tok.type in ops:
             op_tok = self.current_tok
-            res.register(self.advance())
+            res.register_advancement()
+            self.advance()
             right = res.register(func_b())
             if res.error: return res
             left = BinOpNode(left, op_tok, right)
@@ -527,7 +535,26 @@ class Context:
         self.parent = parent
         self.parent_entry_pos = parent_entry_pos
 
+#######################################
+# SYMBOL TABLE
+#######################################
 
+class SymbolTable:
+    def __init__(self):
+        self.symbols = {}
+        self.parent = None
+
+    def get(self, name):
+        value = self.symbols.get(name, None)
+        if value == None and self.parent:
+            return self.parent.get(name)
+        return value
+
+    def set(self, name, value):
+        self.symbols[name] = value
+
+    def remove(self, name):
+        del self.symbols[name]
 #######################################
 # INTERPRETER
 #######################################
@@ -547,6 +574,28 @@ class Interpreter:
         return RTResult().success(
             Number(node.tok.value).set_context(context).set_pos(node.pos_start, node.pos_end)
         )
+
+    def visit_VarAccessNode(self, node, context):
+        res = RTResult()
+        var_name = node.var_name_tok.value
+        value = context.symbol_table.get(var_name)
+
+        if not value:
+            return res.failure(RTError(
+                node.pos_start, node.pos_end,
+                f"'{var_name}' is not defined", context
+            ))
+        
+        return res.success(value)
+
+    def visit_VarAssignNode(self, node, context):
+        res = RTResult()
+        var_name = node.var_name_tok.value
+        value = res.register(self.visit(node.value_node, context))
+        if res.error: return res
+
+        context.symbol_table.set(var_name, value)
+        return res.success(value)
 
     def visit_BinOpNode(self, node, context):
         res = RTResult()
@@ -590,6 +639,8 @@ class Interpreter:
 #######################################
 # RUN
 #######################################
+global_symbol_table = SymbolTable()
+global_symbol_table.set("null", Number(0))
 
 def run(fn, text):
     # Generate tokens
@@ -605,6 +656,7 @@ def run(fn, text):
     # Run program
     interpreter = Interpreter()
     context = Context('<program>')
+    context.symbol_table = global_symbol_table
     result = interpreter.visit(ast.node, context)
 
     return result.value, result.error
