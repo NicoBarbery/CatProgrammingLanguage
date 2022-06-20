@@ -305,9 +305,10 @@ class ParseResult:
     def __init__(self):
         self.error = None
         self.node = None
+        self.advance_count = 0
 
     def register_advancement(self):
-        pass
+        self.advance_count += 1
     
     def register(self, res):
         if res.error: self.error = res.error
@@ -318,7 +319,8 @@ class ParseResult:
         return self
 
     def failure(self, error):
-        self.error = error
+        if not self.error or self.advance_count == 0:
+            self.error = error
         return self
 
 
@@ -430,8 +432,15 @@ class Parser:
             if res.error: return res
             return res.success(VarAssignNode(var_name, expr))
 
-        return self.bin_op(self.term, (TT_PLUS, TT_MINUS))
+        node = res.register(self.bin_op(self.term, (TT_PLUS, TT_MINUS)))
 
+        if res.error: 
+            return res.failure(InvalidSyntaxError(
+                self.current_tok.pos_start, self.current_tok.pos_end,
+                "Expected 'mew[KEYWORD]', 'int', 'float', 'identifier', '+', '-' or '('"
+            ))
+
+        return res.success(node)
     ###################################
 
     def bin_op(self, func_a, ops, func_b=None):
@@ -586,6 +595,7 @@ class Interpreter:
                 f"'{var_name}' is not defined", context
             ))
         
+        value = value.copy().set_pos(node.pos_start, node.pos_end)
         return res.success(value)
 
     def visit_VarAssignNode(self, node, context):
