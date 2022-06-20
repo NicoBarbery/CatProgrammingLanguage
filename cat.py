@@ -108,32 +108,32 @@ TT_RPAREN = 'RPAREN'
 TT_EOF = 'EOF'
 
 KEYWORDS = [
-    'VAR', 
-    'miau', #IF
-    'Miau', #FOR
-    'mIau', #RANGE
-    'miaU', #WHILE
-    'mew', #INT
-    'Mew', #BOOL
-    'mEw', #FLOAT
-    'meW', #STRING
-    'MeW', #CHAR
-    'MEw', #LISTAS
-    'MEW', #BREAK
-    'mEW', #RETURN
-    'muau', #PRINT
-    'Muau', #OUTPUT
-    'MeoW', #FALSE
-    'mEOw', #TRUE
-    'meOw', #AND
-    'meoW', #OR
-    'Meauw', #BEGIN
-    'mEauw', #END
-    'mIau', #ELIF
-    'miAu', #ELSE
-    'meAuw', #IMPORT
-    'meaUw', #FROM
-    'meauW', #AS
+    'mewVAR', 
+    'mewIF',
+    'mewFOR',
+    'mewRANGE',
+    'mewWHILE',
+    'mewINT',
+    'mewBOOL',
+    'mewFLOAT',
+    'mewSTRING',
+    'mewCHAR',
+    'mewLISTAS',
+    'mewBREAK',
+    'mewRETURN',
+    'mewPRINT',
+    'mewOUTPUT',
+    'mewFALSE',
+    'mewTRUE',
+    'mewAND',
+    'mewOR',
+    'mewBEGIN',
+    'mewEND',
+    'mewELIF',
+    'mewELSE',
+    'mewIMPORT',
+    'mewFROM',
+    'mewAS',
 ]
 
 class Token:
@@ -257,6 +257,20 @@ class NumberNode:
     def __repr__(self):
         return f'{self.tok}'
 
+class VarAccessNode:
+    def __init__(self, var_name_tok):
+        self.var_name_tok = var_name_tok
+
+        self.pos_start = self.var_name_tok.pos_start
+        self.pos_end = self.var_name_tok.pos_end
+
+class VarAssignNode:
+    def __init__(self, var_name_tok, value_node):
+        self.var_name_tok = var_name_tok
+        self.value_node = value_node
+        self.pos_start = self.var_name_tok.pos_start
+        self.pos_end = self.var_name_tok.pos_end
+        
 
 class BinOpNode:
     def __init__(self, left_node, op_tok, right_node):
@@ -343,6 +357,10 @@ class Parser:
             res.register(self.advance())
             return res.success(NumberNode(tok))
 
+        elif tok.type == TT_IDENTIFIER:
+            res.register(self.advance())
+            return res.success(VarAccessNode(tok))
+
         elif tok.type == TT_LPAREN:
             res.register(self.advance())
             expr = res.register(self.expr())
@@ -380,6 +398,31 @@ class Parser:
         return self.bin_op(self.factor, (TT_MUL, TT_DIV))
 
     def expr(self):
+        res = ParseResult()
+
+        if self.current_tok.matches(TT_KEYWORD, 'mewVAR'):
+            res.register(self.advance())
+
+            if self.current_tok.type != TT_IDENTIFIER:
+                return res.failure(InvalidSyntaxError(
+                    self.current_tok.pos_start, self.current_tok.pos_end, 
+                    "Expected identifier"
+                ))
+            
+            var_name = self.current_tok
+            res.register(self.advance())
+
+            if self.current_tok.type != TT_EQ:
+                return res.failure(InvalidSyntaxError(
+                    self.current_tok.pos_start, self.current_tok.pos_end, 
+                    "Expected '='"
+                ))
+
+            res.register(self.advance())
+            expr =  res.register(self.expr())
+            if res.error: return res
+            return res.success(VarAssignNode(var_name, expr))
+
         return self.bin_op(self.term, (TT_PLUS, TT_MINUS))
 
     ###################################
