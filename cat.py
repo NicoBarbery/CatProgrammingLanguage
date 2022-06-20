@@ -2,6 +2,7 @@
 # IMPORTS
 #######################################
 
+from ast import Return
 from strings_with_arrows import *
 import string
 #######################################
@@ -470,7 +471,7 @@ class Parser:
     def comp_expr(self):
         res = ParseResult()
 
-        if self.current_tok.matches(TT_KEYWORD, 'NOT'):
+        if self.current_tok.matches(TT_KEYWORD, 'mewNOT'):
             op_tok = self.current_tok
             res.register_advancement()
             self.advance()
@@ -486,6 +487,8 @@ class Parser:
                 self.current_tok.pos_start, self.current_tok.pos_end,
                 "Expected int, float, , identifier, '+', '-', '(' or 'NOT'"
             ))
+
+        return res.success(node)
 
     def expr(self):
         res = ParseResult()
@@ -708,6 +711,22 @@ class Interpreter:
             result, error = left.dived_by(right)
         elif node.op_tok.type == TT_POW:
             result, error = left.powed_by(right)
+        elif node.op_tok.type == TT_EE:
+            result, error = left.comparison_eq(right)
+        elif node.op_tok.type == TT_NE:
+            result, error = left.comparison_ne(right)
+        elif node.op_tok.type == TT_LT:
+            result, error = left.comparison_lt(right)
+        elif node.op_tok.type == TT_GT:
+            result, error = left.comparison_gt(right)
+        elif node.op_tok.type == TT_LTE:
+            result, error = left.comparison_lte(right)
+        elif node.op_tok.type == TT_GTE:
+            result, error = left.comparison_gte(right)
+        elif node.op_tok.matches(TT_KEYWORD, 'mewAND'):
+            result, error = left.anded_by(right)
+        elif node.op_tok.matches(TT_KEYWORD, 'mewOR'):
+            result, error = left.ored_by(right)
 
         if error:
             return res.failure(error)
