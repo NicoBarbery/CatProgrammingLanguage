@@ -4,7 +4,7 @@
 
 class RTResult:
     def __init__(self):
-        self.reverse()
+        self.reset()
     
     def reset(self):
         self.value = None

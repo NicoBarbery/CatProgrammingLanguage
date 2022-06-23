@@ -2,7 +2,7 @@ from components.errors import InvalidSyntaxError
 from results.parseResult import ParseResult
 from components.nodes import *
 from cat import *
-
+from tokens import *
 #######################################
 # PARSER
 #######################################

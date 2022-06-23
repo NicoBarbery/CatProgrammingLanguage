@@ -2,7 +2,7 @@ from components.errors import ExpectedCharError, IllegalCharError
 from components.position import Position
 from components.token import Token
 from cat import *
-
+from tokens import *
 #######################################
 # LEXER
 #######################################
