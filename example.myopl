@@ -1,31 +1,30 @@
-# This is a very useful piece of software
+#this is a comment
 
-FUN oopify(prefix) -> prefix + "oop"
+mewFUN oopify(prefix) -> prefix + "oop"
 
-FUN join(elements, separator)
-	VAR result = ""
-	VAR len = LEN(elements)
+mewFUN join(elements, separator)
+    mewVAR result = ""
+    mewVAR len = mewLEN(elements)
 
-	FOR i = 0 TO len THEN
-		VAR result = result + elements/i
-		IF i != len - 1 THEN VAR result = result + separator
-	END
+    mewFOR i = 0 mewTO len mewTHEN
+        mewVAR result = result + elements/i
+        mewVAR result = result + separator
+    mewEND
+    mewRETURN result
+mewEND
 
-	RETURN result
-END
+mewFUN map(elements, func)
+	mewVAR new_elements = []
 
-FUN map(elements, func)
-	VAR new_elements = []
+	mewFOR i = 0 mewTO mewLEN(elements) mewTHEN
+		mewAPPEND(new_elements, func(elements/i))
+	mewEND
 
-	FOR i = 0 TO LEN(elements) THEN
-		APPEND(new_elements, func(elements/i))
-	END
+	mewRETURN new_elements
+mewEND
 
-	RETURN new_elements
-END
+mewPRINT("Hello World")
 
-PRINT("Greetings universe!")
-
-FOR i = 0 TO 5 THEN
-	PRINT(join(map(["l", "sp"], oopify), ", "))
-END
+mewFOR i = 0 mewTO 5 mewTHEN
+    mewPRINT(join(map(["l", "sp"], oopify), ", "))
+mewEND
