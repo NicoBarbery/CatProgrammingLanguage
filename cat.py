@@ -8,6 +8,7 @@ import string
 import os
 import math
 
+
 #######################################
 # CONSTANTS
 #######################################
@@ -1726,7 +1727,10 @@ class BuiltInFunction(BaseFunction):
     #####################################
 
     def execute_print(self, exec_ctx):
-        print(str(exec_ctx.symbol_table.get('value')))
+        global output
+
+        output = str(exec_ctx.symbol_table.get('value'))
+        print(output)
         return RTResult().success(Number.null)
 
     execute_print.arg_names = ['value']
