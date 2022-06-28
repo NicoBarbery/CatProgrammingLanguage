@@ -2241,9 +2241,11 @@ global_symbol_table.set("mewRUN", BuiltInFunction.run)
 
 
 def run(fn, text):
+    global tokens
     # Generate tokens
     lexer = Lexer(fn, text)
     tokens, error = lexer.make_tokens()
+    print("TOKENS -->",tokens)
     if error: return None, error
 
     # Generate AST

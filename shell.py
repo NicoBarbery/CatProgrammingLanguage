@@ -3,7 +3,6 @@ from tkinter import *
 from tkinter import ttk
 from tkinter.filedialog import asksaveasfilename, askopenfilename
 from tkinter.scrolledtext import ScrolledText
-import subprocess
 
 # create an instance for window
 window = Tk()
@@ -82,18 +81,24 @@ def run(event=None):
         elif result:
             if len(result.elements) == 1:
                 print(repr(result.elements[0]))
-                # delete the previous text from output_windows
+                # delete the previous text from output_windows and tokens_window
                 output_window.delete(1.0, END)
-                # insert the new output text in output_windows
+                tokens_window.delete(1.0, END)
+                # insert the new output text in output_windows and tokens_window
                 output_window.insert(1.0, repr(result.elements[0]))
-                output_window.insert(1.0, "\n")
-                output_window.insert(1.0, cat.output)
+                #output_window.insert(1.0, cat.output)
+                tokens_window.insert(1.0, cat.tokens)
+                
             else:
-                output_window.delete(1.0, END)
                 print(result)
+                # delete the previous text from output_windows and tokens_window
+                output_window.delete(1.0, END)
+                tokens_window.delete(1.0, END)
+                # insert the new output text in output_windows and tokens_window
                 output_window.insert(1.0, repr(result.elements))
-                output_window.insert(1.0, "\n")
                 output_window.insert(1.0, cat.output)
+                tokens_window.insert(1.0, cat.tokens)
+            
 
 window.bind("<F5>", run)
 
@@ -101,26 +106,25 @@ window.bind("<F5>", run)
 def close(event=None):
     window.destroy()
 
-
 window.bind("<Control-q>", close)
 
 
 # define function to cut
 # the selected text
 def cut_text(event=None):
-    editor.event_generate(("<<Cortar>>"))
+    editor.event_generate(("<<Cut>>"))
 
 
 # define function to copy
 # the selected text
 def copy_text(event=None):
-    editor.event_generate(("<<Copiar>>"))
+    editor.event_generate(("<<Copy>>"))
 
 
 # define function to paste
 # the previously copied text
 def paste_text(event=None):
-    editor.event_generate(("<<Pegar>>"))
+    editor.event_generate(("<<Paste>>"))
 
 
 # create menus
@@ -191,14 +195,16 @@ editor.bind("<<Modified>>", change_word)
 
 # function for light mode window
 def light():
-    editor.config(bg="white")
-    output_window.config(bg="white")
+    editor.config(fg="black", bg="white")
+    output_window.config(fg="black", bg="white")
+    tokens_window.config(fg="black", bg="white")
 
 
 # function for dark mode window
 def dark():
     editor.config(fg="white", bg="black")
     output_window.config(fg="white", bg="black")
+    tokens_window.config(fg="white", bg="black")
 
 
 # add commands to change themes
@@ -206,6 +212,10 @@ theme_menu.add_command(label="light", command=light)
 theme_menu.add_command(label="dark", command=dark)
 
 # create output window to display output of written code
+tokens_window = ScrolledText(window, height=20)
+tokens_window.pack(side="right", fill=BOTH, expand=1)
+
+# create output window to display output of written code
 output_window = ScrolledText(window, height=10)
-output_window.pack(fill=BOTH, expand=1)
+output_window.pack(side="left", fill=BOTH, expand=1)
 window.mainloop()
