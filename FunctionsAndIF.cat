@@ -1,0 +1,7 @@
+#Testeando Funciones
+mewFUN Saludar(nombre, enfatizacion) -> "HOLA, " * enfatizacion + nombre
+
+Saludar("Ing Marcelo Lopez", 3)
+Saludar("Nico", 1)
+
+mewVAR res = mewIF 5 == 5 mewTHEN mewPRINT("Correcto") mewELSE mewPRINT("Incorrecto")

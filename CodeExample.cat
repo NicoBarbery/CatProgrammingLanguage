@@ -1,8 +1,9 @@
-#this is a comment
+#Probando Con metodos, varios tokens y keywords
+mewPRINT("Hello World")
 
-mewFUN oopify(prefix) -> prefix + "oop"
+mewFUN amplificar(prefix) -> prefix + " mewmew"
 
-mewFUN join(elements, separator)
+mewFUN unir(elements, separator)
     mewVAR result = ""
     mewVAR len = mewLEN(elements)
 
@@ -13,7 +14,7 @@ mewFUN join(elements, separator)
     mewRETURN result
 mewEND
 
-mewFUN map(elements, func)
+mewFUN mapeo(elements, func)
 	mewVAR new_elements = []
 
 	mewFOR i = 0 mewTO mewLEN(elements) mewTHEN
@@ -23,8 +24,6 @@ mewFUN map(elements, func)
 	mewRETURN new_elements
 mewEND
 
-mewPRINT("Hello World")
-
 mewFOR i = 0 mewTO 5 mewTHEN
-    mewPRINT(join(map(["l", "sp"], oopify), ", "))
+    mewPRINT(unir(mapeo(["mewww", "miauuuu"], amplificar), ", "))
 mewEND

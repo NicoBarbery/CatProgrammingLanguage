@@ -1,0 +1,10 @@
+#probando el mewWHILE
+mewVAR i = 0
+mewWHILE i<10 mewTHEN mewVAR i = i+1
+mewPRINT(i)
+
+
+#probando el mewFOR
+mewFOR i = 0 mewTO 10 mewTHEN
+    mewPRINT(i)
+mewEND
